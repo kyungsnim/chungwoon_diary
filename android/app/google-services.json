@@ -1,0 +1,94 @@
+{
+  "project_info": {
+    "project_number": "737330944316",
+    "project_id": "chungwoon-diary",
+    "storage_bucket": "chungwoon-diary.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:737330944316:android:bd584a71755476a5d5e639",
+        "android_client_info": {
+          "package_name": "com.chungwon_diary"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "737330944316-bu2rjau1ufevoa2n19kbe8kbbvp7i73c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chungwon_diary",
+            "certificate_hash": "c7db24fd69f5efb54f9069c9dae8f41fa7d666c3"
+          }
+        },
+        {
+          "client_id": "737330944316-ngpo3dfvnqe5lqtfi2lj92kj4nph68u0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chungwon_diary",
+            "certificate_hash": "d7d8071b3a120ac38bb0c99f6943e274b364812d"
+          }
+        },
+        {
+          "client_id": "737330944316-o7s50a9fadllctekjj6d2o78q8kqs2m5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chungwon_diary",
+            "certificate_hash": "7bacbec310890157ae0598d22d8c8186c214e2d6"
+          }
+        },
+        {
+          "client_id": "737330944316-puh124602sjom9rmu3f4e250a9bqcgbo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chungwon_diary",
+            "certificate_hash": "684f663472604fc56e50ae8049ce49c9de54a851"
+          }
+        },
+        {
+          "client_id": "737330944316-sbbs56tqd02qev406t1pvpaqnp6ej2vr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chungwon_diary",
+            "certificate_hash": "914d0fd233020c01c522285012cd02f927509e04"
+          }
+        },
+        {
+          "client_id": "737330944316-vohnblg938ees62lbjnvsl87j47vbq8s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chungwon_diary",
+            "certificate_hash": "4a4a5209cd6241aa9bf7d3f29daf6daf88cbe6ae"
+          }
+        },
+        {
+          "client_id": "737330944316-udc3qdm1mh0kdsd9v87gnnieh8i75m4g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaFFmtLNXEdkibfFIxRD2YhVUxMRbxxSM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "737330944316-udc3qdm1mh0kdsd9v87gnnieh8i75m4g.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "737330944316-t2hunqt3d8lflrkr3lfn2u1tloli27iu.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.chungwonDiary"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
