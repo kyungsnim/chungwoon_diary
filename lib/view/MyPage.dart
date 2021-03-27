@@ -27,10 +27,14 @@ class _MyInfoPageState extends State<MyInfoPage> {
   PickedFile _imageFile;
   File profileImage;
   final ImagePicker _picker = ImagePicker();
+  var isLoading;
 
   @override
   void initState() {
     super.initState();
+    setState(() {
+      // isLoading = false;
+    });
   }
 
   @override
@@ -60,14 +64,14 @@ class _MyInfoPageState extends State<MyInfoPage> {
         SizedBox(height: 5),
         currentUser.role == 'admin'
             ? InkWell(
-          onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => SettingUserInfoPage()));
-          },
-          child: menuBox('최초 가입자 승인'),
-        )
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => SettingUserInfoPage()));
+                },
+                child: menuBox('최초 가입자 승인'),
+              )
             : Container(),
         SizedBox(height: 5),
         currentUser.role == 'admin'
@@ -119,7 +123,8 @@ class _MyInfoPageState extends State<MyInfoPage> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Text(
-                                userInfo == null ? "" : userInfo.toString(), //user.userId,
+                                userInfo == null ? "" : userInfo.toString(),
+                                //user.userId,
                                 style: TextStyle(
                                     fontFamily: 'Nanum',
                                     fontWeight: FontWeight.bold,
@@ -199,15 +204,8 @@ class _MyInfoPageState extends State<MyInfoPage> {
                                                     fit: BoxFit.cover),
                                               )),
                                     )
-                                  : _imageFile == null
-                                      ? Container() // AssetImage(
-                                      //     'assets/images/animal/${currentUser.randomNumber}.png')
-                                      : FileImage(File(_imageFile.path))
-                              // child: CircleAvatar(
-                              //   backgroundImage: currentUser.url != "" ? NetworkImage(currentUser.url) : _imageFile == null ? AssetImage('assets/images/animal/${currentUser.randomNumber}.png') : FileImage(File(_imageFile.path)),
-                              //   backgroundColor: Colors.grey,
-                              // ),
-                              ),
+                                  : AssetImage(
+                                      'assets/images/animal/1.png')),
                         ],
                       ),
                       Positioned(
@@ -312,6 +310,7 @@ class _MyInfoPageState extends State<MyInfoPage> {
     final pickedFile = await _picker.getImage(source: ImageSource.gallery);
     setState(() {
       _imageFile = pickedFile;
+      isLoading = true;
     });
 
     // 해당 경로로 파일 생성
@@ -337,7 +336,7 @@ class _MyInfoPageState extends State<MyInfoPage> {
 
     // Future.delayed(Duration(seconds: 10));
     // upload 완료된 경우 url 경로 저장해두기
-    uploadTask.then((TaskSnapshot taskSnapshot)  {
+    uploadTask.then((TaskSnapshot taskSnapshot) {
       taskSnapshot.ref.getDownloadURL().then((value) async {
         setState(() {
           _imageUrl = value;
@@ -368,6 +367,7 @@ class _MyInfoPageState extends State<MyInfoPage> {
         // 현재 유저정보에 값 셋팅하기
         setState(() {
           currentUser = CurrentUser.fromDocument(documentSnapshot);
+          isLoading = false;
         });
 
         Navigator.pushReplacement(

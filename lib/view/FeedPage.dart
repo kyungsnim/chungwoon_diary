@@ -47,7 +47,7 @@ class _FeedPageState extends State<FeedPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // appBar: customAppBar('Home'),
-      body: currentUser.validateByAdmin != null && currentUser.validateByAdmin ? _buildBody(context) : Center(child: Text('관리자 승인 후 이용 가능합니다.', style: TextStyle(fontFamily: 'Nanum', fontSize: 18),)),
+      body: _buildBody(context),
     );
   }
 

@@ -17,7 +17,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   TextEditingController userNameController;
   TextEditingController inbodyScoreController;
   var _checkValue = false;
-  final gradeList = [
+  final gradeList = [0,
     1970,
     1971,
     1972,
@@ -66,7 +66,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     2015,
     2016
   ];
-  var grade = 1990; // 학년
+  var grade; // 또래
   var inbodyScore = "";
 
   submitUsernameAndGrade() {
@@ -130,7 +130,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         info[0] = userName != null && userName.length > 0
             ? userName
             : "${nameList[nameRandomNumber]}${nameTwoList[nameTwoRandomNumber]}$userRandomNumber";
-        info[1] = grade != null ? grade : 1950;
+        info[1] = grade != null ? grade : 0;
         info[2] = inbodyScore != null ? inbodyScore : "";
       });
 
@@ -151,7 +151,6 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   void initState() {
     super.initState();
     setState(() {
-      grade = 1990;
       inbodyScore = "";
     });
   }

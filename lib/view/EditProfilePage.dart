@@ -23,7 +23,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   bool loading = false;
   CurrentUser currentUser;
   var userName; // 수험번호
-  final gradeList = [
+  final gradeList = [0,
     1970,
     1971,
     1972,

@@ -32,6 +32,7 @@ class _LoginPageState extends State<LoginPage> {
   // for apple login
   String errorMessage;
   var randomGenerator = Random();
+  List<dynamic> info = new List(3);
 
   @override
   initState() {
@@ -39,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
     // Future.delayed(const Duration(seconds: 1));
 
     // 앱 실행시 애플 사용자의 변경여부를 확인함
-    if(Platform.isIOS) {
+    if (Platform.isIOS) {
       checkLoggedInState();
       AppleSignIn.onCredentialRevoked.listen((_) {
         print("Credentials revoked");
@@ -180,6 +181,77 @@ class _LoginPageState extends State<LoginPage> {
   //   }
   // }
 
+  submitUsernameAndGrade() {
+    // final form = _formKey.currentState;
+    // if (form.validate()) {
+    //   form.save();
+    var randomGenerator = Random();
+    var nameList = [
+      '순진한',
+      '배고픈',
+      '행복한',
+      '졸린',
+      '어리석은',
+      '멍한',
+      '기뻐하는',
+      '우울한',
+      '재미있는',
+      '재치있는',
+      '흥겨운',
+      '외로운',
+      '피곤한',
+      '산뜻한',
+      '귀여운',
+      '예쁜',
+      '유쾌한',
+      '발랄한',
+      '다부진',
+      '신나는'
+    ];
+    var nameTwoList = [
+      '돌고래',
+      '여우',
+      '강아지',
+      '고양이',
+      '사자',
+      '나무늘보',
+      '코끼리',
+      '미국인',
+      '영국인',
+      '가나인',
+      '한국인',
+      '중국인',
+      '태국인',
+      '베트콩',
+      '몽골인',
+      '참새',
+      '딱따구리',
+      '앵무새',
+      '낙타',
+      '쥐',
+      '조랑말',
+      '타조'
+    ];
+    var nameRandomNumber = randomGenerator.nextInt(nameList.length - 1);
+    var nameTwoRandomNumber = randomGenerator.nextInt(nameTwoList.length - 1);
+    var userRandomNumber = randomGenerator.nextInt(9999);
+    // 입력한 username, phoneNumber 추가
+    setState(() {
+      info[0] =
+          "${nameList[nameRandomNumber]}${nameTwoList[nameTwoRandomNumber]}$userRandomNumber";
+      info[1] = 0;
+      info[2] = "";
+    });
+
+    // if(userName)
+    // SnackBar snackBar = SnackBar(content: Text('Welcome ' + userName));
+    // _scaffoldKey.currentState.showSnackBar(snackBar);
+
+    // 회원가입시 push notification 사용을 위한 사용자 푸쉬 토큰 저장해주기
+    // _saveDeviceToken();
+    // }
+  }
+
   // for apple login
   saveAppleUserInfoToFirestore(User user) async {
     // 해당 유저의 db정보 가져오기
@@ -188,10 +260,12 @@ class _LoginPageState extends State<LoginPage> {
 
     // 해당 유저의 db정보가 없다면
     if (!documentSnapshot.exists) {
-
       // 유저정보를 셋팅하는 페이지로 이동 (애플은 사용자 정보 중 username이나 phone number를 저장하고 있지 않아서 별도 페이지에서 받아오도록 구현함)
-      final info = await Navigator.push(context,
-          MaterialPageRoute(builder: (context) => CreateAccountPage()));
+      // final info = await Navigator.push(context,
+      //     MaterialPageRoute(builder: (context) => CreateAccountPage()));
+
+      // 애플 로그인인 경우 정보입력화면 없이 진행
+      submitUsernameAndGrade();
 
       // 유저정보 셋팅된 값으로 db에 set
       userReference.doc(user.uid).set({
@@ -256,8 +330,11 @@ class _LoginPageState extends State<LoginPage> {
     // 해당 유저의 db정보가 없다면
     if (!documentSnapshot.exists) {
       // 유저정보를 셋팅하는 페이지로 이동
-      final info = await Navigator.push(context,
-          MaterialPageRoute(builder: (context) => CreateAccountPage()));
+      // final info = await Navigator.push(context,
+      //     MaterialPageRoute(builder: (context) => CreateAccountPage()));
+
+      // 정보입력화면 없이 진행
+      submitUsernameAndGrade();
 
       // 유저정보 셋팅된 값으로 db에 set
       userReference.doc(gCurrentUser.id).set({
