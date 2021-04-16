@@ -29,8 +29,42 @@ class _CalendarDiaryPageState extends State<CalendarDiaryPage> {
 
   @override
   void initState() {
+    //updateAlert();
     super.initState();
     _calendarController = CalendarController();
+  }
+
+  updateAlert() async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('업데이트 안내'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('이미지 압축률 개선에 따른 원활한 사용을 위해 본인의 프로필 사진을 변경 후 서비스를 이용해 주시기 바랍니다.')
+                ],
+              ),
+            ),
+            insetPadding: EdgeInsets.all(10),
+            actions: [
+              TextButton(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Text('닫기',
+                      style: TextStyle(
+                          fontFamily: 'Nanum',
+                          color: Colors.grey,
+                          fontSize: 20)),
+                ),
+                onPressed: () async {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        });
   }
 
   void _onDaySelected(day, events, List e) {
@@ -502,7 +536,7 @@ class _CalendarDiaryPageState extends State<CalendarDiaryPage> {
                               'profileUrl': currentUser.url != null &&
                                       currentUser.url != ""
                                   ? currentUser.url
-                                  : currentUser.randomNumber,
+                                  : currentUser.randomNumber.toString(),
                               'firstQuestion': diary.firstQuestion,
                               'secondQuestion': diary.secondQuestion,
                               'thirdQuestion': diary.thirdQuestion,
@@ -643,9 +677,9 @@ class _CalendarDiaryPageState extends State<CalendarDiaryPage> {
   topImage(diary) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
-      child: Container(
+      child: diary.imageUrl != null && diary.imageUrl != "" ? Container(
         child: ClipRRect(
-          child: diary.imageUrl != null
+          child: diary.imageUrl != null && diary.imageUrl != ""
               ? CachedNetworkImage(
                   imageUrl: diary.imageUrl,
                   placeholder: (context, url) => CircularProgressIndicator(),
@@ -658,11 +692,11 @@ class _CalendarDiaryPageState extends State<CalendarDiaryPage> {
                   height: MediaQuery.of(context).size.width * 0.25,
                   fit: BoxFit.fill,
                 ),
-        ),
+        ) ,
         decoration: BoxDecoration(boxShadow: [
           BoxShadow(offset: Offset(0, 0), blurRadius: 2, color: Colors.black54)
         ]),
-      ),
+      ): SizedBox(),
     );
   }
 

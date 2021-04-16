@@ -58,10 +58,16 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
 
     print('_summitDate.weekday : ${_summitDate.weekday}');
 
-    switch(_summitDate.weekday) {
-      case 0: sundayQuestionSetting(); break;
-      case 6: saturdayQuestionSetting(); break;
-      default: questionSetting(); break;
+    switch (_summitDate.weekday) {
+      case 0:
+        sundayQuestionSetting();
+        break;
+      case 6:
+        saturdayQuestionSetting();
+        break;
+      default:
+        questionSetting();
+        break;
     }
 
     setState(() {
@@ -271,7 +277,7 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
                                       );
                                     },
                                   ));
-                                  if(picked.isAfter(DateTime.now())) {
+                                  if (picked.isAfter(DateTime.now())) {
                                     alertNotCheckFuturePopup();
                                   } else if (picked != null) {
                                     setState(() {
@@ -279,12 +285,22 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
                                     });
 
                                     // 날짜 바뀌면 해당일자의 질문항목으로 채워주고 해당일자 질문 없으면 기본 질문으로 셋팅
-                                    print('_summitDate.weekday : ${_summitDate.weekday}');
+                                    print(
+                                        '_summitDate.weekday : ${_summitDate.weekday}');
 
-                                    switch(_summitDate.weekday) {
-                                      case 0: sundayQuestionSetting(); break;
-                                      case 6: saturdayQuestionSetting(); break;
-                                      default: questionSetting(); break;
+                                    switch (_summitDate.weekday) {
+                                      case 0:
+                                        sundayQuestionSetting();
+                                        break;
+                                      case 6:
+                                        saturdayQuestionSetting();
+                                        break;
+                                      case 7:
+                                        sundayQuestionSetting();
+                                        break;
+                                      default:
+                                        questionSetting();
+                                        break;
                                     }
                                   }
                                 },
@@ -520,265 +536,274 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
                   ],
                 ),
               ),
-              _summitDate.weekday > 0 && _summitDate.weekday < 6 ?
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Flexible(
-                          child: Container(
-                              child: Text('질문 2. $_secondQuestion',
-                                  style: TextStyle(
-                                      fontFamily: 'Nanum',
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold))),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 3),
-                    Container(
-                      alignment: Alignment.center,
-                      width: MediaQuery.of(context).size.width * 1,
-                      height: MediaQuery.of(context).size.height * 0.15,
-                      child: Stack(children: [
-                        Container(
-                          decoration: BoxDecoration(
-                              border: Border.symmetric(
-                                  horizontal: BorderSide(
-                                      color: Colors.black54, width: 0.5))),
-                          width: MediaQuery.of(context).size.width * 1,
-                          height: MediaQuery.of(context).size.height * 1,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextFormField(
-                            keyboardType: TextInputType.multiline,
-                            maxLines: null,
-                            // expands: true,
-                            controller: _secondAnswerController,
-                            cursorColor: Colors.black,
-                            validator: (val) {
-                              if (val.isEmpty) {
-                                return '내용을 입력하세요';
-                              } else {
-                                return null;
-                              }
-                            },
-                            decoration: InputDecoration(
-                                border: InputBorder.none,
-                                hintText: '내용 입력',
-                                hintStyle: TextStyle(
-                                    fontFamily: 'Nanum', fontSize: 15)),
-                            onChanged: (val) {
-                              setState(() {
-                                _secondAnswer = val;
-                              });
-                            },
+              _summitDate.weekday > 0 && _summitDate.weekday < 6
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 8),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Flexible(
+                                child: Container(
+                                    child: Text('질문 2. $_secondQuestion',
+                                        style: TextStyle(
+                                            fontFamily: 'Nanum',
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold))),
+                              ),
+                            ],
                           ),
-                        ),
-                      ]),
-                    ),
-                  ],
-                ),
-              ) : SizedBox(),
-              _summitDate.weekday > 0 && _summitDate.weekday < 6 ?
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 8.0),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Flexible(
-                          child: Container(
-                              child: Text('질문 3. $_thirdQuestion',
-                                  style: TextStyle(
-                                      fontFamily: 'Nanum',
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold))),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 3),
-                    Container(
-                      alignment: Alignment.center,
-                      width: MediaQuery.of(context).size.width * 1,
-                      height: MediaQuery.of(context).size.height * 0.15,
-                      child: Stack(children: [
-                        Container(
-                          decoration: BoxDecoration(
-                              border: Border.symmetric(
-                                  horizontal: BorderSide(
-                                      color: Colors.black54, width: 0.5))),
-                          width: MediaQuery.of(context).size.width * 1,
-                          height: MediaQuery.of(context).size.height * 1,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextFormField(
-                            keyboardType: TextInputType.multiline,
-                            maxLines: null,
-                            // expands: true,
-                            controller: _thirdAnswerController,
-                            cursorColor: Colors.black,
-                            validator: (val) {
-                              if (val.isEmpty) {
-                                return '내용을 입력하세요';
-                              } else {
-                                return null;
-                              }
-                            },
-                            decoration: InputDecoration(
-                                border: InputBorder.none,
-                                hintText: '내용 입력',
-                                hintStyle: TextStyle(
-                                    fontFamily: 'Nanum', fontSize: 15)),
-                            onChanged: (val) {
-                              setState(() {
-                                _thirdAnswer = val;
-                              });
-                            },
+                          SizedBox(height: 3),
+                          Container(
+                            alignment: Alignment.center,
+                            width: MediaQuery.of(context).size.width * 1,
+                            height: MediaQuery.of(context).size.height * 0.15,
+                            child: Stack(children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                    border: Border.symmetric(
+                                        horizontal: BorderSide(
+                                            color: Colors.black54,
+                                            width: 0.5))),
+                                width: MediaQuery.of(context).size.width * 1,
+                                height: MediaQuery.of(context).size.height * 1,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: TextFormField(
+                                  keyboardType: TextInputType.multiline,
+                                  maxLines: null,
+                                  // expands: true,
+                                  controller: _secondAnswerController,
+                                  cursorColor: Colors.black,
+                                  validator: (val) {
+                                    if (val.isEmpty) {
+                                      return '내용을 입력하세요';
+                                    } else {
+                                      return null;
+                                    }
+                                  },
+                                  decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: '내용 입력',
+                                      hintStyle: TextStyle(
+                                          fontFamily: 'Nanum', fontSize: 15)),
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _secondAnswer = val;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ]),
                           ),
-                        ),
-                      ]),
-                    ),
-                  ],
-                ),
-              ) : SizedBox(),
-              _summitDate.weekday > 0 && _summitDate.weekday < 6 ?
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 8.0),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Flexible(
-                          child: Container(
-                              child: Text('질문 4. $_fourthQuestion',
-                                  style: TextStyle(
-                                      fontFamily: 'Nanum',
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold))),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 3),
-                    Container(
-                      alignment: Alignment.center,
-                      width: MediaQuery.of(context).size.width * 1,
-                      height: MediaQuery.of(context).size.height * 0.15,
-                      child: Stack(children: [
-                        Container(
-                          decoration: BoxDecoration(
-                              border: Border.symmetric(
-                                  horizontal: BorderSide(
-                                      color: Colors.black54, width: 0.5))),
-                          width: MediaQuery.of(context).size.width * 1,
-                          height: MediaQuery.of(context).size.height * 1,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextFormField(
-                            keyboardType: TextInputType.multiline,
-                            maxLines: null,
-                            // expands: true,
-                            controller: _fourthAnswerController,
-                            cursorColor: Colors.black,
-                            validator: (val) {
-                              if (val.isEmpty) {
-                                return '내용을 입력하세요';
-                              } else {
-                                return null;
-                              }
-                            },
-                            decoration: InputDecoration(
-                                border: InputBorder.none,
-                                hintText: '내용 입력',
-                                hintStyle: TextStyle(
-                                    fontFamily: 'Nanum', fontSize: 15)),
-                            onChanged: (val) {
-                              setState(() {
-                                _fourthAnswer = val;
-                              });
-                            },
+                        ],
+                      ),
+                    )
+                  : SizedBox(),
+              _summitDate.weekday > 0 && _summitDate.weekday < 6
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 8.0),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Flexible(
+                                child: Container(
+                                    child: Text('질문 3. $_thirdQuestion',
+                                        style: TextStyle(
+                                            fontFamily: 'Nanum',
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold))),
+                              ),
+                            ],
                           ),
-                        ),
-                      ]),
-                    ),
-                  ],
-                ),
-              ) : SizedBox(),
-              _summitDate.weekday > 0 && _summitDate.weekday < 6 ?
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 8.0),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Flexible(
-                          child: Container(
-                              child: Text('질문 5. $_fifthQuestion',
-                                  style: TextStyle(
-                                      fontFamily: 'Nanum',
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold))),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 3),
-                    Container(
-                      alignment: Alignment.center,
-                      width: MediaQuery.of(context).size.width * 1,
-                      height: MediaQuery.of(context).size.height * 0.15,
-                      child: Stack(children: [
-                        Container(
-                          decoration: BoxDecoration(
-                              border: Border.symmetric(
-                                  horizontal: BorderSide(
-                                      color: Colors.black54, width: 0.5))),
-                          width: MediaQuery.of(context).size.width * 1,
-                          height: MediaQuery.of(context).size.height * 1,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextFormField(
-                            keyboardType: TextInputType.multiline,
-                            maxLines: null,
-                            // expands: true,
-                            controller: _fifthAnswerController,
-                            cursorColor: Colors.black,
-                            validator: (val) {
-                              if (val.isEmpty) {
-                                return '내용을 입력하세요';
-                              } else {
-                                return null;
-                              }
-                            },
-                            decoration: InputDecoration(
-                                border: InputBorder.none,
-                                hintText: '내용 입력',
-                                hintStyle: TextStyle(
-                                    fontFamily: 'Nanum', fontSize: 15)),
-                            onChanged: (val) {
-                              setState(() {
-                                _fifthAnswer = val;
-                              });
-                            },
+                          SizedBox(height: 3),
+                          Container(
+                            alignment: Alignment.center,
+                            width: MediaQuery.of(context).size.width * 1,
+                            height: MediaQuery.of(context).size.height * 0.15,
+                            child: Stack(children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                    border: Border.symmetric(
+                                        horizontal: BorderSide(
+                                            color: Colors.black54,
+                                            width: 0.5))),
+                                width: MediaQuery.of(context).size.width * 1,
+                                height: MediaQuery.of(context).size.height * 1,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: TextFormField(
+                                  keyboardType: TextInputType.multiline,
+                                  maxLines: null,
+                                  // expands: true,
+                                  controller: _thirdAnswerController,
+                                  cursorColor: Colors.black,
+                                  validator: (val) {
+                                    if (val.isEmpty) {
+                                      return '내용을 입력하세요';
+                                    } else {
+                                      return null;
+                                    }
+                                  },
+                                  decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: '내용 입력',
+                                      hintStyle: TextStyle(
+                                          fontFamily: 'Nanum', fontSize: 15)),
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _thirdAnswer = val;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ]),
                           ),
-                        ),
-                      ]),
-                    ),
-                  ],
-                ),
-              ) : SizedBox(),
+                        ],
+                      ),
+                    )
+                  : SizedBox(),
+              _summitDate.weekday > 0 && _summitDate.weekday < 6
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 8.0),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Flexible(
+                                child: Container(
+                                    child: Text('질문 4. $_fourthQuestion',
+                                        style: TextStyle(
+                                            fontFamily: 'Nanum',
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold))),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 3),
+                          Container(
+                            alignment: Alignment.center,
+                            width: MediaQuery.of(context).size.width * 1,
+                            height: MediaQuery.of(context).size.height * 0.15,
+                            child: Stack(children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                    border: Border.symmetric(
+                                        horizontal: BorderSide(
+                                            color: Colors.black54,
+                                            width: 0.5))),
+                                width: MediaQuery.of(context).size.width * 1,
+                                height: MediaQuery.of(context).size.height * 1,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: TextFormField(
+                                  keyboardType: TextInputType.multiline,
+                                  maxLines: null,
+                                  // expands: true,
+                                  controller: _fourthAnswerController,
+                                  cursorColor: Colors.black,
+                                  validator: (val) {
+                                    if (val.isEmpty) {
+                                      return '내용을 입력하세요';
+                                    } else {
+                                      return null;
+                                    }
+                                  },
+                                  decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: '내용 입력',
+                                      hintStyle: TextStyle(
+                                          fontFamily: 'Nanum', fontSize: 15)),
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _fourthAnswer = val;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ]),
+                          ),
+                        ],
+                      ),
+                    )
+                  : SizedBox(),
+              _summitDate.weekday > 0 && _summitDate.weekday < 6
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 8.0),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Flexible(
+                                child: Container(
+                                    child: Text('질문 5. $_fifthQuestion',
+                                        style: TextStyle(
+                                            fontFamily: 'Nanum',
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold))),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 3),
+                          Container(
+                            alignment: Alignment.center,
+                            width: MediaQuery.of(context).size.width * 1,
+                            height: MediaQuery.of(context).size.height * 0.15,
+                            child: Stack(children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                    border: Border.symmetric(
+                                        horizontal: BorderSide(
+                                            color: Colors.black54,
+                                            width: 0.5))),
+                                width: MediaQuery.of(context).size.width * 1,
+                                height: MediaQuery.of(context).size.height * 1,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: TextFormField(
+                                  keyboardType: TextInputType.multiline,
+                                  maxLines: null,
+                                  // expands: true,
+                                  controller: _fifthAnswerController,
+                                  cursorColor: Colors.black,
+                                  validator: (val) {
+                                    if (val.isEmpty) {
+                                      return '내용을 입력하세요';
+                                    } else {
+                                      return null;
+                                    }
+                                  },
+                                  decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: '내용 입력',
+                                      hintStyle: TextStyle(
+                                          fontFamily: 'Nanum', fontSize: 15)),
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _fifthAnswer = val;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ]),
+                          ),
+                        ],
+                      ),
+                    )
+                  : SizedBox(),
               SizedBox(height: 20),
               processing
                   ? Center(
@@ -789,26 +814,25 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
                       ),
                     )
                   : GestureDetector(
-                  onTap: () {
-                    checkFeedPopup();
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    height: 40,
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    decoration: BoxDecoration(
-                        border: Border.symmetric(
-                            horizontal: BorderSide(
-                                color: Colors.black54, width: 0.5))),
-                    child: Text(
-                      '작성 완료',
-                      style: TextStyle(
-                          fontFamily: 'Nanum',
-                          color: Colors.black,
-                          fontSize: 20,
-                      fontWeight: FontWeight.bold,)
-                    ),
-                  )),
+                      onTap: () {
+                        checkFeedPopup();
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        height: 40,
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        decoration: BoxDecoration(
+                            border: Border.symmetric(
+                                horizontal: BorderSide(
+                                    color: Colors.black54, width: 0.5))),
+                        child: Text('작성 완료',
+                            style: TextStyle(
+                              fontFamily: 'Nanum',
+                              color: Colors.black,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            )),
+                      )),
               SizedBox(height: 20)
             ],
           ),
@@ -826,49 +850,56 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
   // }
 
   Future uploadImageToFirebase(BuildContext context) async {
-    // 업로드된 일기의 사진을 변경할 때만 해당 로직 태우기
-    if (_imageChanged) {
-      var todayMonth = _summitDate.month < 10
-          ? '0' + _summitDate.month.toString()
-          : _summitDate.month;
-      var todayDay = _summitDate.day < 10
-          ? '0' + _summitDate.day.toString()
-          : _summitDate.day;
+    try {
+      // 업로드된 일기의 사진을 변경할 때만 해당 로직 태우기
+      if (_imageChanged) {
+        var todayMonth = _summitDate.month < 10
+            ? '0' + _summitDate.month.toString()
+            : _summitDate.month;
+        var todayDay = _summitDate.day < 10
+            ? '0' + _summitDate.day.toString()
+            : _summitDate.day;
 
-      // upload file 제목
-      String fileName = 'image_${_summitDate.year}$todayMonth$todayDay';
-      // upload 위치 지정
-      Reference firebaseStorageRef = FirebaseStorage.instance
-          .ref()
-          .child('uploads/${currentUser.id}/$fileName');
-      // upload 시작
-      UploadTask uploadTask = firebaseStorageRef.putFile(_imageFile);
+        // upload file 제목
+        String fileName = 'image_${_summitDate.year}$todayMonth$todayDay';
+        // upload 위치 지정
+        Reference firebaseStorageRef = FirebaseStorage.instance
+            .ref()
+            .child('uploads/${currentUser.id}/$fileName');
+        // upload 시작
+        UploadTask uploadTask = firebaseStorageRef.putFile(_imageFile);
 
-      // upload 중 state 체크
-      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-        print('Snapshot state: ${snapshot.state}'); // paused, running, complete
-        // print('Progress: ${snapshot.totalBytes / snapshot.bytesTransferred}');
-      }, onError: (Object e) {
-        print(e); // FirebaseException
-      });
-
-      // upload 완료된 경우 url 경로 저장해두기
-      uploadTask.then((TaskSnapshot taskSnapshot) {
-        taskSnapshot.ref.getDownloadURL().then((value) {
-          setState(() {
-            _imageUrl = value;
-          });
-          // 다이어리 업로드 (url 경로를 얻은 후에 업로드 해야 함)
-          _summitDate.weekday > 0 && _summitDate.weekday < 6 ?
-          uploadDiary() : weekendUploadDiary();
-          // uploadDiary();
+        // upload 중 state 체크
+        uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+          print(
+              'Snapshot state: ${snapshot.state}'); // paused, running, complete
+          // print('Progress: ${snapshot.totalBytes / snapshot.bytesTransferred}');
+        }, onError: (Object e) {
+          print(e); // FirebaseException
         });
-      });
-    } else {
-      // 사진 변경 없는 수정일 경우 바로 uploadDiary
-      _summitDate.weekday > 0 && _summitDate.weekday < 6 ?
-      uploadDiary() : weekendUploadDiary();
-      // uploadDiary();
+
+        // upload 완료된 경우 url 경로 저장해두기
+        uploadTask.then((TaskSnapshot taskSnapshot) {
+          taskSnapshot.ref.getDownloadURL().then((value) {
+            setState(() {
+              _imageUrl = value;
+            });
+            // 다이어리 업로드 (url 경로를 얻은 후에 업로드 해야 함)
+            _summitDate.weekday > 0 && _summitDate.weekday < 6
+                ? uploadDiary()
+                : weekendUploadDiary();
+            // uploadDiary();
+          });
+        });
+      } else {
+        // 사진 변경 없는 수정일 경우 바로 uploadDiary
+        _summitDate.weekday > 0 && _summitDate.weekday < 6
+            ? uploadDiary()
+            : weekendUploadDiary();
+        // uploadDiary();
+      }
+    } catch(e) {
+      print(e);
     }
   }
 
@@ -883,7 +914,7 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
 
   Future getGalleryImage() async {
     final pickedFile = await ImagePicker.pickImage(
-        source: ImageSource.gallery, imageQuality: 20);
+        source: ImageSource.gallery, imageQuality: 5);
 
     setState(() {
       _imageFile = File(pickedFile.path);
@@ -909,17 +940,19 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
             .doc(widget.diary != null ? widget.diary.id : id),
         {
           "id": widget.diary != null ? widget.diary.id : id,
-          currentUser.url != "" ? "profileUrl" : currentUser.url:
-          currentUser.randomNumber,
+          "profileUrl": currentUser.url != ""
+              ? currentUser.url
+              : "",
           "grade": currentUser.grade != null ? currentUser.grade : 1950,
-          "userName": currentUser.userName != null ? currentUser.userName : "name",
+          "userName":
+              currentUser.userName != null ? currentUser.userName : "name",
           "firstQuestion": _firstQuestion,
           "firstAnswer": _firstAnswer,
           "imageUrl": _imageUrl != null && _imageUrl != "" ? _imageUrl : "",
           "summitDate": _summitDate,
           "createdAt": DateTime.now(),
           "isCompleteToFeed":
-          widget.diary != null ? widget.diary.isCompleteToFeed : false,
+              widget.diary != null ? widget.diary.isCompleteToFeed : false,
         });
 
     if (widget.diary != null) {
@@ -953,10 +986,12 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
             .doc(widget.diary != null ? widget.diary.id : id),
         {
           "id": widget.diary != null ? widget.diary.id : id,
-          currentUser.url != "" ? "profileUrl" : currentUser.url:
-              currentUser.randomNumber,
+          "profileUrl": currentUser.url != ""
+              ? currentUser.url
+              : "",
           "grade": currentUser.grade != null ? currentUser.grade : 1950,
-          "userName": currentUser.userName != null ? currentUser.userName : "name",
+          "userName":
+              currentUser.userName != null ? currentUser.userName : "name",
           "firstQuestion": _firstQuestion,
           "firstAnswer": _firstAnswer,
           "secondQuestion": _secondQuestion,
@@ -1057,8 +1092,7 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
           return AlertDialog(
             title: Text('날짜 확인',
                 style: TextStyle(fontFamily: 'Nanum', color: Colors.black)),
-            content: Text(
-                "미래의 날짜는 선택할 수 없습니다.",
+            content: Text("미래의 날짜는 선택할 수 없습니다.",
                 style: TextStyle(fontFamily: 'Nanum', color: Colors.black87)),
             actions: [
               TextButton(

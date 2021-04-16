@@ -14,6 +14,7 @@ import 'package:toast/toast.dart';
 import 'EditProfilePage.dart';
 import 'LoginPage/LoginPage.dart';
 import 'MainPage.dart';
+import 'MakePdfPage.dart';
 import 'QuestionCalendarPage.dart';
 import 'QuestionDefaultPage.dart';
 import 'SettingUserInfoPage.dart';
@@ -96,6 +97,18 @@ class _MyInfoPageState extends State<MyInfoPage> {
                 },
                 child: menuBox('질문 캘린더'),
               )
+            : Container(),
+        SizedBox(height: 5),
+        currentUser.role == 'admin'
+            ? InkWell(
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => MakePdfPage()));
+          },
+          child: menuBox('PDF 추출'),
+        )
             : Container(),
       ],
     ));
@@ -204,8 +217,8 @@ class _MyInfoPageState extends State<MyInfoPage> {
                                                     fit: BoxFit.cover),
                                               )),
                                     )
-                                  : AssetImage(
-                                      'assets/images/animal/1.png')),
+                                  : Image.asset(
+                                      'assets/images/animal/${currentUser.randomNumber}.png')),
                         ],
                       ),
                       Positioned(
@@ -307,7 +320,7 @@ class _MyInfoPageState extends State<MyInfoPage> {
 
   void changeProfileImage() async {
     // 갤러리 사진으로 선택
-    final pickedFile = await _picker.getImage(source: ImageSource.gallery);
+    final pickedFile = await _picker.getImage(source: ImageSource.gallery, imageQuality: 5);
     setState(() {
       _imageFile = pickedFile;
       isLoading = true;

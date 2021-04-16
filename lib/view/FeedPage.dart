@@ -5,6 +5,8 @@ import 'package:church_diary_app/model/DiaryModel.dart';
 import 'package:church_diary_app/widget/CustomAppBar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:toast/toast.dart';
+import 'package:characters/characters.dart';
 
 import 'MainPage.dart';
 
@@ -19,6 +21,7 @@ class _FeedPageState extends State<FeedPage> {
   var stream;
   var randomGenerator = Random();
   var weekDayList = ['일', '월', '화', '수', '목', '금', '토', '일'];
+
   // int min = 1, max = 49;
   // var randomNumber = 1 + rnd.nextInt(48);일
   ScrollController _scrollController = new ScrollController();
@@ -104,7 +107,7 @@ class _FeedPageState extends State<FeedPage> {
             title: Stack(children: [
               Positioned(
                 right: 5,
-                top: 50,
+                top: 30,
                 child: Text(
                   '${diary.summitDate.toString().substring(0, 10)}(${weekDayList[diary.summitDate.weekday]})',
                   style: TextStyle(
@@ -120,36 +123,34 @@ class _FeedPageState extends State<FeedPage> {
                         padding: const EdgeInsets.symmetric(vertical: 5),
                         child: Row(
                           children: [
-                            CircleAvatar(
-                              backgroundImage: diary.profileUrl != ""
-                                  ? diary.profileUrl != null
-                                      ? NetworkImage(diary.profileUrl)
-                                      : Center(
-                                          child: CircularProgressIndicator())
-                                  : AssetImage(
-                                      'assets/images/animal/${diary.randomNumber}.png'),
-                              backgroundColor: Colors.grey,
-                            ),
+                            // CircleAvatar(
+                            //   backgroundImage: diary.profileUrl != "" && diary.profileUrl.length > 5
+                            //       ? diary.profileUrl != null
+                            //           ? NetworkImage(diary.profileUrl)
+                            //           : Center(
+                            //               child: CircularProgressIndicator())
+                            //       : AssetImage(
+                            //           'assets/images/animal/${currentUser.randomNumber}.png'),
+                            //   backgroundColor: Colors.grey,
+                            // ),
                             SizedBox(width: 20),
-                            Stack(
-                              children: [
-                                Text(
-                                  '${diary.grade} ${diary.userName}',
-                                  style: TextStyle(fontFamily: 'Nanum'),
-                                ),
-                                // Column(
-                                //   children: [
-                                //     SizedBox(height: 10),
-                                //     Container(
-                                //       alignment: Alignment.bottomCenter,
-                                //       color: Colors.grey.withOpacity(0.4),
-                                //       height: 10,
-                                //       width: 80,
-                                //     ),
-                                //   ],
-                                // )
-                              ]
-                            )
+                            Stack(children: [
+                              Text(
+                                '${diary.grade} ${diary.userName}',
+                                style: TextStyle(fontFamily: 'Nanum'),
+                              ),
+                              // Column(
+                              //   children: [
+                              //     SizedBox(height: 10),
+                              //     Container(
+                              //       alignment: Alignment.bottomCenter,
+                              //       color: Colors.grey.withOpacity(0.4),
+                              //       height: 10,
+                              //       width: 80,
+                              //     ),
+                              //   ],
+                              // )
+                            ])
                             // 이 뿐 name, grade 로 변경돼야
                           ],
                         ),
@@ -163,20 +164,40 @@ class _FeedPageState extends State<FeedPage> {
                               : Container()
                           : Center(child: CircularProgressIndicator()),
                       SizedBox(height: 5),
-                      questionAndAnswer(diary.firstQuestion, diary.firstAnswer),
+                      questionAndAnswer(diary.firstQuestion, diary.firstAnswer.characters),
                       SizedBox(height: 5),
                       questionAndAnswer(
-                          diary.secondQuestion, diary.secondAnswer),
+                          diary.secondQuestion, diary.secondAnswer.characters),
                       SizedBox(height: 5),
-                      questionAndAnswer(diary.thirdQuestion, diary.thirdAnswer),
+                      questionAndAnswer(diary.thirdQuestion, diary.thirdAnswer.characters),
                       SizedBox(height: 5),
                       questionAndAnswer(
-                          diary.fourthQuestion, diary.fourthAnswer),
+                          diary.fourthQuestion, diary.fourthAnswer.characters),
                       SizedBox(height: 5),
-                      questionAndAnswer(diary.fifthQuestion, diary.fifthAnswer),
+                      questionAndAnswer(diary.fifthQuestion, diary.fifthAnswer.characters),
                       SizedBox(height: 5),
                     ],
                   )),
+              Positioned(
+                  right: 5,
+                  bottom: 5,
+                  child: InkWell(
+                      onTap: () {
+                        // 관리자 게시글 삭제기능
+                        checkDeletePopup(diary);
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30)
+                        ),
+                        child: Icon(
+                          Icons.delete_forever_outlined,
+                          color: Colors.redAccent.withOpacity(0.8),
+                          size: 30,
+                        ),
+                      ))),
             ]),
           ),
         ),
@@ -219,21 +240,24 @@ class _FeedPageState extends State<FeedPage> {
                   SizedBox(height: 5),
                   questionAndAnswerAll(diary.firstQuestion, diary.firstAnswer),
                   SizedBox(height: 5),
-                  diary.summitDate.weekday > 0 && diary.summitDate.weekday < 6 ?
-                  Column(
-                    children: [
-                      questionAndAnswerAll(
-                          diary.secondQuestion, diary.secondAnswer),
-                      SizedBox(height: 5),
-                      questionAndAnswerAll(diary.thirdQuestion, diary.thirdAnswer),
-                      SizedBox(height: 5),
-                      questionAndAnswerAll(
-                          diary.fourthQuestion, diary.fourthAnswer),
-                      SizedBox(height: 5),
-                      questionAndAnswerAll(diary.fifthQuestion, diary.fifthAnswer),
-                      SizedBox(height: 5),
-                    ],
-                  ) : SizedBox()
+                  diary.summitDate.weekday > 0 && diary.summitDate.weekday < 6
+                      ? Column(
+                          children: [
+                            questionAndAnswerAll(
+                                diary.secondQuestion, diary.secondAnswer),
+                            SizedBox(height: 5),
+                            questionAndAnswerAll(
+                                diary.thirdQuestion, diary.thirdAnswer),
+                            SizedBox(height: 5),
+                            questionAndAnswerAll(
+                                diary.fourthQuestion, diary.fourthAnswer),
+                            SizedBox(height: 5),
+                            questionAndAnswerAll(
+                                diary.fifthQuestion, diary.fifthAnswer),
+                            SizedBox(height: 5),
+                          ],
+                        )
+                      : SizedBox()
                 ],
               ),
             ),
@@ -257,58 +281,69 @@ class _FeedPageState extends State<FeedPage> {
         });
   }
 
-  questionAndAnswer(question, answer) {
-    return question == null ? SizedBox() : Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Flexible(
-              flex: 1,
-              child: Text(
-                question != null && question.length > 30
-                    ? "$question".substring(0, 30) + "..."
-                    : "$question",
-                style: TextStyle(
-                    fontFamily: 'Nanum',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: Colors.black),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 3),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Flexible(
-              flex: 1,
-              child: Container(
-                width: MediaQuery.of(context).size.width * 1,
-                decoration: BoxDecoration(
-                    border: Border.symmetric(
-                        horizontal:
-                            BorderSide(color: Colors.black54, width: 0.5))),
-                child: Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Text(
-                    answer != null && answer.length > 30
-                        ? "$answer".substring(0, 30) + "..."
-                        : "$answer",
-                    style: TextStyle(
-                        fontFamily: 'Nanum',
-                        color: Colors.black87,
-                        fontSize: 13),
+  questionAndAnswer(question, Characters answer) {
+    var subStringAnswer;
+    var answerLength = answer.length;
+    if(answer != null && answerLength > 30) {
+      subStringAnswer = answer.skipLast(30).toString();
+    } else {
+      subStringAnswer = answer;
+    }
+
+    return question == null
+        ? SizedBox()
+        : Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Flexible(
+                    flex: 1,
+                    child: Text(
+                      question != null && question.length > 30
+                          ? "$question".substring(0, 30) + "..."
+                          : "$question",
+                      style: TextStyle(
+                          fontFamily: 'Nanum',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Colors.black),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 5),
-      ],
-    );
+              SizedBox(height: 3),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Flexible(
+                    flex: 1,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 1,
+                      decoration: BoxDecoration(
+                          border: Border.symmetric(
+                              horizontal: BorderSide(
+                                  color: Colors.black54, width: 0.5))),
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          // answer != null && answer.length > 30
+                          //     ? "${answer.skipLast(30).toString()}" + "..."
+                          //     : "$answer",
+                          subStringAnswer.toString(),
+                          style: TextStyle(
+                              fontFamily: 'Nanum',
+                              color: Colors.black87,
+                              fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 5),
+            ],
+          );
   }
 
   questionAndAnswerAll(question, answer) {
@@ -359,5 +394,65 @@ class _FeedPageState extends State<FeedPage> {
         SizedBox(height: 5),
       ],
     );
+  }
+
+  checkDeletePopup(diary) async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('피드 삭제',
+                style: TextStyle(
+                  fontFamily: 'Nanum',
+                )),
+            content: Text("해당 게시글을 삭제하시겠습니까?",
+                style: TextStyle(fontFamily: 'Nanum', color: Colors.redAccent)),
+            actions: [
+              TextButton(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Text('확인',
+                      style: TextStyle(
+                          fontFamily: 'Nanum',
+                          color: Colors.blueAccent,
+                          fontSize: 20)),
+                ),
+                onPressed: () async {
+                  // batch 생성
+                  WriteBatch writeBatch = FirebaseFirestore.instance.batch();
+
+                  // Feed 게시글 삭제
+                  writeBatch.delete(FirebaseFirestore.instance
+                      .collection('feed')
+                      .doc(diary.id));
+
+                  // batch end
+                  writeBatch.commit();
+
+                  showToast("게시글 삭제 완료");
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => MainPage(1)));
+                },
+              ),
+              TextButton(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Text('취소',
+                      style: TextStyle(
+                          fontFamily: 'Nanum',
+                          color: Colors.grey,
+                          fontSize: 20)),
+                ),
+                onPressed: () async {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  showToast(String msg, {int duration, int gravity}) {
+    Toast.show(msg, context, duration: duration, gravity: gravity);
   }
 }
