@@ -164,17 +164,17 @@ class _FeedPageState extends State<FeedPage> {
                               : Container()
                           : Center(child: CircularProgressIndicator()),
                       SizedBox(height: 5),
-                      questionAndAnswer(diary.firstQuestion, diary.firstAnswer.characters),
+                      diary.firstAnswer != null ? questionAndAnswer(diary.firstQuestion, diary.firstAnswer.characters) : SizedBox(),
                       SizedBox(height: 5),
-                      questionAndAnswer(
-                          diary.secondQuestion, diary.secondAnswer.characters),
+                      diary.secondAnswer != null ? questionAndAnswer(
+                          diary.secondQuestion, diary.secondAnswer.characters == null ? "" : diary.secondAnswer.characters) : SizedBox(),
                       SizedBox(height: 5),
-                      questionAndAnswer(diary.thirdQuestion, diary.thirdAnswer.characters),
+                      diary.thirdAnswer != null ? questionAndAnswer(diary.thirdQuestion, diary.thirdAnswer.characters == null ? "" : diary.thirdAnswer.characters) : SizedBox(),
                       SizedBox(height: 5),
-                      questionAndAnswer(
-                          diary.fourthQuestion, diary.fourthAnswer.characters),
+                      diary.fourthAnswer != null ? questionAndAnswer(
+                          diary.fourthQuestion, diary.fourthAnswer.characters == null ? "" : diary.fourthAnswer.characters) : SizedBox(),
                       SizedBox(height: 5),
-                      questionAndAnswer(diary.fifthQuestion, diary.fifthAnswer.characters),
+                      diary.fifthAnswer != null ? questionAndAnswer(diary.fifthQuestion, diary.fifthAnswer.characters == null ? "" : diary.fifthAnswer.characters) : SizedBox(),
                       SizedBox(height: 5),
                     ],
                   )),
@@ -283,7 +283,10 @@ class _FeedPageState extends State<FeedPage> {
 
   questionAndAnswer(question, Characters answer) {
     var subStringAnswer;
-    var answerLength = answer.length;
+    var answerLength = 0;
+    if(answer != null) {
+      answerLength = answer.length;
+    }
     if(answer != null && answerLength > 30) {
       subStringAnswer = answer.skipLast(30).toString();
     } else {

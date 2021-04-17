@@ -4,8 +4,10 @@ import 'dart:typed_data';
 import 'package:church_diary_app/model/CurrentUser.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:toast/toast.dart';
@@ -21,6 +23,7 @@ class _MakePdfPageState extends State<MakePdfPage> {
   Stream snapshot;
   QuerySnapshot ds;
   bool isLoading;
+  PdfDocument document = PdfDocument();
 
   getAllUserData() async {
     snapshot = FirebaseFirestore.instance.collection('users').snapshots();
@@ -63,83 +66,102 @@ class _MakePdfPageState extends State<MakePdfPage> {
                 : Container(
                     child: TextButton(
                     child: Text('PDF'),
-                    onPressed: () {
-                      if (ds.size > 0) {
-                        // 모든 사용자 돌면서 pdf 저장시켜줘야 함
-                        for (int i = 0; i < ds.docs.length; i++) {
-                          // diary 데이터 불러오기
-                          ds.docs[i].reference
-                              .collection('diarys')
-                              .get()
-                              .then((value) {
-                            if (value.size > 0) {
-                              try {
-                                var data;
-                                rootBundle
-                                    .load("fonts/NanumMyeongjo.ttf")
-                                    .then((value) {
-                                  setState(() {
-                                    data = value;
-                                  });
-                                });
-                                final pdf = pw.Document();
-                                // final Uint8List fontData = File(
-                                //     '/fonts/NanumMyeongjo.ttf')
-                                //     .readAsBytesSync();
-                                final ttf = pw.Font.ttf(data);
-
-                                // final image = pw.MemoryImage(
-                                //   File
-                                // )
-                                // 일기별로 돌면서 pdf에 페이지 추가
-                                for (int j = 0; j < value.docs.length; j++) {
-                                  print(value.docs[j].data()['firstQuestion']);
-                                  pdf.addPage(pw.Page(
-                                      pageFormat: PdfPageFormat.a4,
-                                      build: (pw.Context context) {
-                                        return pw.Center(
-                                            child: pw.Column(
-                                          children: [
-                                            pw.Text(
-                                                value.docs[j]
-                                                    .data()['firstQuestion'],
-                                                style: pw.TextStyle(
-                                                    font: ttf,
-                                                    fontSize: 20,
-                                                    fontWeight:
-                                                        pw.FontWeight.bold)),
-                                            pw.Text(
-                                                value.docs[j]
-                                                    .data()['firstAnswer'],
-                                                style: pw.TextStyle(
-                                                    font: ttf, fontSize: 15)),
-                                            // pw.Text(value.docs[j].data()['firstQuestion'], style: pw.TextStyle(font: ttf, fontSize: 20)),
-                                            // pw.Text(value.docs[j].data()['firstQuestion'], style: pw.TextStyle(font: ttf, fontSize: 20)),
-                                            // pw.Text(value.docs[j].data()['firstQuestion'], style: pw.TextStyle(font: ttf, fontSize: 20)),
-                                            // pw.Text(value.docs[j].data()['firstQuestion'], style: pw.TextStyle(font: ttf, fontSize: 20)),
-                                          ],
-                                        )); // Center
-                                      })); // Page
-                                }
-
-                                savePdf(pdf, ds.docs[i].data()['profileName']);
-
-                                // pdf 업로드하기
-                              } catch (e) {
-                                print(e);
-                              }
-                            }
-                          });
-                        }
-                      }
-                    },
+                    // onPressed: () {
+                    //   if (ds.size > 0) {
+                    //     // 모든 사용자 돌면서 pdf 저장시켜줘야 함
+                    //     for (int i = 0; i < ds.docs.length; i++) {
+                    //       // diary 데이터 불러오기
+                    //       ds.docs[i].reference
+                    //           .collection('diarys')
+                    //           .get()
+                    //           .then((value) {
+                    //         if (value.size > 0) {
+                    //           try {
+                    //             var data;
+                    //             rootBundle
+                    //                 .load("fonts/NanumMyeongjo.ttf")
+                    //                 .then((value) {
+                    //               setState(() {
+                    //                 data = value;
+                    //               });
+                    //             });
+                    //             final pdf = pw.Document();
+                    //             // final Uint8List fontData = File(
+                    //             //     '/fonts/NanumMyeongjo.ttf')
+                    //             //     .readAsBytesSync();
+                    //             // final Uint8List fontData = File('/fonts/NanumMyeongjo.ttf').readAsBytesSync();
+                    //             // final ttf = pw.Font.ttf(fontData.buffer.asByteData());
+                    //             // final ttf = pw.Font.ttf(data);
+                    //
+                    //             // final image = pw.MemoryImage(
+                    //             //   File
+                    //             // )
+                    //             // 일기별로 돌면서 pdf에 페이지 추가
+                    //             for (int j = 0; j < value.docs.length; j++) {
+                    //               print(value.docs[j].data()['firstQuestion']);
+                    //               pdf.addPage(pw.Page(
+                    //                   pageFormat: PdfPageFormat.a4,
+                    //                   build: (pw.Context context) {
+                    //                     return pw.Center(
+                    //                         child: pw.Column(
+                    //                       children: [
+                    //                         pw.Text(
+                    //                             value.docs[j]
+                    //                                 .data()['firstQuestion'],
+                    //                             style: pw.TextStyle(
+                    //                                 // font: ttf,
+                    //                                 fontSize: 20,
+                    //                                 fontWeight:
+                    //                                     pw.FontWeight.bold)),
+                    //                         pw.Text(
+                    //                             value.docs[j]
+                    //                                 .data()['firstAnswer'],
+                    //                             style: pw.TextStyle(
+                    //                                 // font: ttf,
+                    //                                 fontSize: 15)),
+                    //                         // pw.Text(value.docs[j].data()['firstQuestion'], style: pw.TextStyle(font: ttf, fontSize: 20)),
+                    //                         // pw.Text(value.docs[j].data()['firstQuestion'], style: pw.TextStyle(font: ttf, fontSize: 20)),
+                    //                         // pw.Text(value.docs[j].data()['firstQuestion'], style: pw.TextStyle(font: ttf, fontSize: 20)),
+                    //                         // pw.Text(value.docs[j].data()['firstQuestion'], style: pw.TextStyle(font: ttf, fontSize: 20)),
+                    //                       ],
+                    //                     )); // Center
+                    //                   })); // Page
+                    //             }
+                    //
+                    //             savePdf(pdf, ds.docs[i].data()['profileName']);
+                    //
+                    //             // pdf 업로드하기
+                    //           } catch (e) {
+                    //             print(e);
+                    //           }
+                    //         }
+                    //       });
+                    //     }
+                    //   }
+                    // },
+                    //   onPressed: createPdf,
                   )),
           ),
         ));
   }
 
+  // Future<void> saveAndLaunchFile(List<int> bytes, String fileName) async {
+  //   final path = (await getExternalStorageDirectory()).path;
+  //   final file = File('$path/$fileName');
+  //   await file.writeAsBytes(bytes, flush: true);
+  //   OpenFile.open('$path/$fileName');
+  // }
+  // createPdf() async {
+  //   PdfDocument document = PdfDocument();
+  //   document.pages.add();
+  //
+  //   List<int> bytes = document.save();
+  //   document.dispose();
+  // }
+
   savePdf(pdf, userName) async {
-    final file = File("$userName.pdf");
+    final output = await getTemporaryDirectory();
+    final file = File("${output.path}/$userName.pdf");
     await file.writeAsBytes(await pdf.save());
 
     Reference diaryRef =
