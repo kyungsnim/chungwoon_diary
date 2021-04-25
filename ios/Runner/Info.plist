@@ -37,6 +37,8 @@
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Your gallery image is used to register your profile image.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>For download and make pdf file</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

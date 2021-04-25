@@ -1,12 +1,12 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:church_diary_app/model/CurrentUser.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_image/firebase_image.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_downloader/image_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -26,6 +26,9 @@ class _MakePdfPageState extends State<MakePdfPage> {
   bool isLoading;
   PdfDocument document = PdfDocument();
   Printing pt;
+  var imageId = new List<dynamic>(200);
+  List<Future<String>> imageDownloadPath = new List<Future<String>>(200);
+  var imageLoad = new List<dynamic>(200);
 
   getAllUserData() async {
     snapshot = FirebaseFirestore.instance.collection('users').snapshots();
@@ -56,6 +59,25 @@ class _MakePdfPageState extends State<MakePdfPage> {
     return userModel;
   }
 
+  // Future downloadImageFromFirebaseStorage(String imageUrl) async {
+  //   // var imageId = await ImageDownloader.downloadImage(imageUrl, destination: AndroidDestinationType.custom(directory:'sample'));
+  //   if (imageId == null) {
+  //     return "is not exist";
+  //   }
+  //   var path = await ImageDownloader.findPath(imageId);
+  //   return path;
+  // }
+
+  getImageFromFirebase(imageUrl, index) async {
+    imageId[index] = await ImageDownloader.downloadImage(imageUrl,
+        destination: AndroidDestinationType.directoryDownloads);
+
+    // 여러개 사진 받을 때 너무 빨라서 그런지 4개 중 뒤에 2개 이미지 파일을 다운받지 못하고 에러가 난다... 원인 파악 중
+    imageId[index].then((value) {
+      imageDownloadPath[index] = ImageDownloader.findPath(value);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,260 +87,343 @@ class _MakePdfPageState extends State<MakePdfPage> {
           child: Center(
             child: ds == null || isLoading
                 ? CircularProgressIndicator()
-                : Container(
-                    child: TextButton(
-                    child: Text('PDF'),
-                    onPressed: () async {
-                      // 로딩 시작
-                      setState(() {
-                        isLoading = true;
-                      });
+                : Column(
+                    children: [
+                      Container(
+                          child: TextButton(
+                        child: Text('PDF'),
+                        onPressed: () async {
+                          // 로딩 시작
+                          setState(() {
+                            isLoading = true;
+                          });
 
-                      final fontData =
+                          final fontData =
+                              await rootBundle.load('fonts/NanumMyeongjo.ttf');
+
+                          if (ds.size > 0) {
+                            // 모든 사용자 돌면서 pdf 저장시켜줘야 함
+                            for (int i = 0; i < ds.docs.length; i++) {
+                              // diary 데이터 불러오기
+                              ds.docs[i].reference
+                                  .collection('diarys')
+                                  .get()
+                                  .then((value) {
+                                if (value.size > 0) {
+                                  try {
+                                    final pdf = pw.Document();
+
+                                    // final Uint8List fontData = File('/fonts/NanumMyeongjo.ttf').readAsBytesSync();
+                                    final ttf = pw.Font.ttf(fontData);
+
+                                    if (ds.docs[i].data()['profileName'] ==
+                                        '제이티비') {
+                                      // if(i < 5) {
+                                      // 일기별로 돌면서 pdf에 페이지 추가
+                                      for (int j = 0;
+                                          j < value.docs.length;
+                                          j++) {
+                                        imageDownloadPath[j].then((valueString) {
+                                          imageLoad[j] = File(valueString).readAsBytesSync();
+                                        });
+
+                                        // rootBundle.load('assets/images/background.jpg').then((value) {
+                                        //   imageLoad = value.buffer.asUint8List;
+                                        // });
+                                        pdf.addPage(pw.Page(
+                                            pageFormat: PdfPageFormat.a4,
+                                            build: (pw.Context context) {
+                                              return pw.Stack(children: [
+                                                pw.Column(
+                                                  crossAxisAlignment: pw
+                                                      .CrossAxisAlignment.start,
+                                                  children: [
+                                                    // Image 인터엣 상에서 가져와서 pdf로 저장하는 부분이 계속 안되고 있다.
+                                                    value.docs[j]
+                                                        .data()['imageUrl'] != null &&
+                                                        value.docs[j]
+                                                            .data()['imageUrl'] != ""
+                                                        ?
+                                                    pw.Image(pw.MemoryImage(imageLoad[j])) : pw.SizedBox(),
+                                                    pw.Text(value.docs[j]
+                                                        .data()['createdAt']
+                                                        .toDate()
+                                                        .toString()
+                                                        .substring(0, 10)),
+                                                    pw.SizedBox(height: 10),
+                                                    pw.Text(
+                                                        value.docs[j]
+                                                            .data()[
+                                                                'firstQuestion']
+                                                            .toString(),
+                                                        style: pw.TextStyle(
+                                                            font: ttf,
+                                                            fontSize: 11,
+                                                            fontWeight: pw
+                                                                .FontWeight
+                                                                .bold)),
+                                                    pw.Divider(thickness: 0.5),
+                                                    pw.Text(
+                                                        value.docs[j]
+                                                            .data()[
+                                                                'firstAnswer']
+                                                            .toString(),
+                                                        style: pw.TextStyle(
+                                                            font: ttf,
+                                                            fontSize: 10)),
+                                                    pw.Divider(thickness: 0.5),
+                                                    pw.SizedBox(height: 8),
+                                                    value.docs[j].data()[
+                                                                'secondQuestion'] !=
+                                                            null
+                                                        ? pw.Text(
+                                                            value.docs[j]
+                                                                    .data()[
+                                                                'secondQuestion'],
+                                                            style: pw.TextStyle(
+                                                                font: ttf,
+                                                                fontSize: 11))
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'secondQuestion'] !=
+                                                            null
+                                                        ? pw.Divider(
+                                                            thickness: 0.5)
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'secondAnswer'] !=
+                                                            null
+                                                        ? pw.Text(
+                                                            value.docs[j]
+                                                                    .data()[
+                                                                'secondAnswer'],
+                                                            style: pw.TextStyle(
+                                                                font: ttf,
+                                                                fontSize: 10))
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'secondQuestion'] !=
+                                                            null
+                                                        ? pw.Divider(
+                                                            thickness: 0.5)
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'secondQuestion'] !=
+                                                            null
+                                                        ? pw.SizedBox(height: 8)
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'thirdQuestion'] !=
+                                                            null
+                                                        ? pw.Text(
+                                                            value.docs[j]
+                                                                    .data()[
+                                                                'thirdQuestion'],
+                                                            style: pw.TextStyle(
+                                                                font: ttf,
+                                                                fontSize: 11))
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'thirdQuestion'] !=
+                                                            null
+                                                        ? pw.Divider(
+                                                            thickness: 0.5)
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'thirdAnswer'] !=
+                                                            null
+                                                        ? pw.Text(
+                                                            value.docs[j]
+                                                                    .data()[
+                                                                'thirdAnswer'],
+                                                            style: pw.TextStyle(
+                                                                font: ttf,
+                                                                fontSize: 10))
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'thirdQuestion'] !=
+                                                            null
+                                                        ? pw.Divider(
+                                                            thickness: 0.5)
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'thirdQuestion'] !=
+                                                            null
+                                                        ? pw.SizedBox(height: 8)
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'fourthQuestion'] !=
+                                                            null
+                                                        ? pw.Text(
+                                                            value.docs[j]
+                                                                    .data()[
+                                                                'fourthQuestion'],
+                                                            style: pw.TextStyle(
+                                                                font: ttf,
+                                                                fontSize: 11))
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'fourthQuestion'] !=
+                                                            null
+                                                        ? pw.Divider(
+                                                            thickness: 0.5)
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'fourthAnswer'] !=
+                                                            null
+                                                        ? pw.Text(
+                                                            value.docs[j]
+                                                                    .data()[
+                                                                'fourthAnswer'],
+                                                            style: pw.TextStyle(
+                                                                font: ttf,
+                                                                fontSize: 10))
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'fourthQuestion'] !=
+                                                            null
+                                                        ? pw.Divider(
+                                                            thickness: 0.5)
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'fourthQuestion'] !=
+                                                            null
+                                                        ? pw.SizedBox(height: 8)
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'fifthQuestion'] !=
+                                                            null
+                                                        ? pw.Text(
+                                                            value.docs[j]
+                                                                    .data()[
+                                                                'fifthQuestion'],
+                                                            style: pw.TextStyle(
+                                                                font: ttf,
+                                                                fontSize: 11))
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'fifthQuestion'] !=
+                                                            null
+                                                        ? pw.Divider(
+                                                            thickness: 0.5)
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'fifthAnswer'] !=
+                                                            null
+                                                        ? pw.Text(
+                                                            value.docs[j]
+                                                                    .data()[
+                                                                'fifthAnswer'],
+                                                            style: pw.TextStyle(
+                                                                font: ttf,
+                                                                fontSize: 10))
+                                                        : pw.SizedBox(),
+                                                    value.docs[j].data()[
+                                                                'fifthQuestion'] !=
+                                                            null
+                                                        ? pw.Divider(
+                                                            thickness: 0.5)
+                                                        : pw.SizedBox(),
+                                                  ],
+                                                ),
+
+                                              ]); // Center
+                                            })); // Page
+                                      }
+
+                                      savePdf(
+                                          pdf,
+                                          ds.docs[i]
+                                                  .data()['grade']
+                                                  .toString() +
+                                              ' ' +
+                                              ds.docs[i].data()['profileName']);
+                                    }
+                                    // pdf 업로드하기
+                                  } catch (e) {
+                                    print(e);
+                                  }
+                                }
+                              });
+                            }
+                          }
+
+                          // 로딩 끝
+                          setState(() {
+                            isLoading = false;
+                          });
+                        },
+                        // onPressed: createPdf,
+                      )),
+                      TextButton(onPressed: () async {
+                        try {
+                          // 로딩 시작
+                          setState(() {
+                            isLoading = true;
+                          });
+
+                          final fontData =
                           await rootBundle.load('fonts/NanumMyeongjo.ttf');
 
-                      if (ds.size > 0) {
-                        // 모든 사용자 돌면서 pdf 저장시켜줘야 함
-                        for (int i = 0; i < ds.docs.length; i++) {
-                          // diary 데이터 불러오기
-                          ds.docs[i].reference
-                              .collection('diarys')
-                              .get()
-                              .then((value) {
-                            if (value.size > 0) {
-                              try {
-                                // var data;
-                                // rootBundle
-                                //     .load("fonts/NanumMyeongjo.ttf")
-                                //     .then((value) {
-                                //   setState(() {
-                                //     data = value;
-                                //   });
-                                // });
-                                final pdf = pw.Document();
-
-                                // final Uint8List fontData = File('/fonts/NanumMyeongjo.ttf').readAsBytesSync();
-                                final ttf = pw.Font.ttf(fontData);
-                                // final ttf = pw.Font.ttf(data);
-
-                                // final image = pw.MemoryImage(
-                                //   File
-                                // )
-                                if (ds.docs[i].data()['profileName'] ==
-                                    '제이티비') {
-                                  // 일기별로 돌면서 pdf에 페이지 추가
-                                  for (int j = 0; j < value.docs.length; j++) {
-                                    ImageProvider networkImage = NetworkImage(value.docs[j].data()['imageUrl']);
-                                    // print(value.docs[j].data()['firstQuestion']);
-                                    pdf.addPage(pw.Page(
-                                        pageFormat: PdfPageFormat.a4,
-                                        build: (pw.Context context) {
-                                          return pw.Stack(
-                                            children: [
-                                              pw.Column(
-                                                crossAxisAlignment:
-                                                pw.CrossAxisAlignment.start,
-                                                children: [
-                                                  // pw.Image.network(''),
-                                                  pw.Text(value.docs[j]
-                                                      .data()['createdAt']
-                                                      .toDate()
-                                                      .toString()
-                                                      .substring(0, 10)),
-                                                  pw.SizedBox(height: 10),
-                                                  pw.Text(
-                                                      value.docs[j]
-                                                          .data()['firstQuestion']
-                                                          .toString(),
-                                                      style: pw.TextStyle(
-                                                          font: ttf,
-                                                          fontSize: 11,
-                                                          fontWeight:
-                                                          pw.FontWeight.bold)),
-                                                  pw.Divider(thickness: 0.5),
-                                                  pw.Text(
-                                                      value.docs[j]
-                                                          .data()['firstAnswer']
-                                                          .toString(),
-                                                      style: pw.TextStyle(
-                                                          font: ttf, fontSize: 10)),
-                                                  pw.Divider(thickness: 0.5),
-                                                  pw.SizedBox(height: 8),
-                                                  value.docs[j].data()[
-                                                  'secondQuestion'] !=
-                                                      null
-                                                      ? pw.Text(
-                                                      value.docs[j].data()[
-                                                      'secondQuestion'],
-                                                      style: pw.TextStyle(
-                                                          font: ttf,
-                                                          fontSize: 11))
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'secondQuestion'] !=
-                                                      null
-                                                      ? pw.Divider(thickness: 0.5)
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'secondAnswer'] !=
-                                                      null
-                                                      ? pw.Text(
-                                                      value.docs[j].data()[
-                                                      'secondAnswer'],
-                                                      style: pw.TextStyle(
-                                                          font: ttf,
-                                                          fontSize: 10))
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'secondQuestion'] !=
-                                                      null
-                                                      ? pw.Divider(thickness: 0.5)
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'secondQuestion'] !=
-                                                      null
-                                                      ? pw.SizedBox(height: 8)
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'thirdQuestion'] !=
-                                                      null
-                                                      ? pw.Text(
-                                                      value.docs[j].data()[
-                                                      'thirdQuestion'],
-                                                      style: pw.TextStyle(
-                                                          font: ttf,
-                                                          fontSize: 11))
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'thirdQuestion'] !=
-                                                      null
-                                                      ? pw.Divider(thickness: 0.5)
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'thirdAnswer'] !=
-                                                      null
-                                                      ? pw.Text(
-                                                      value.docs[j].data()[
-                                                      'thirdAnswer'],
-                                                      style: pw.TextStyle(
-                                                          font: ttf,
-                                                          fontSize: 10))
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'thirdQuestion'] !=
-                                                      null
-                                                      ? pw.Divider(thickness: 0.5)
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'thirdQuestion'] !=
-                                                      null
-                                                      ? pw.SizedBox(height: 8)
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'fourthQuestion'] !=
-                                                      null
-                                                      ? pw.Text(
-                                                      value.docs[j].data()[
-                                                      'fourthQuestion'],
-                                                      style: pw.TextStyle(
-                                                          font: ttf,
-                                                          fontSize: 11))
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'fourthQuestion'] !=
-                                                      null
-                                                      ? pw.Divider(thickness: 0.5)
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'fourthAnswer'] !=
-                                                      null
-                                                      ? pw.Text(
-                                                      value.docs[j].data()[
-                                                      'fourthAnswer'],
-                                                      style: pw.TextStyle(
-                                                          font: ttf,
-                                                          fontSize: 10))
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'fourthQuestion'] !=
-                                                      null
-                                                      ? pw.Divider(thickness: 0.5) : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'fourthQuestion'] !=
-                                                      null
-                                                      ? pw.SizedBox(height: 8) : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'fifthQuestion'] !=
-                                                      null
-                                                      ? pw.Text(
-                                                      value.docs[j].data()[
-                                                      'fifthQuestion'],
-                                                      style: pw.TextStyle(
-                                                          font: ttf,
-                                                          fontSize: 11))
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'fifthQuestion'] !=
-                                                      null
-                                                      ? pw.Divider(thickness: 0.5) : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'fifthAnswer'] !=
-                                                      null
-                                                      ? pw.Text(
-                                                      value.docs[j].data()[
-                                                      'fifthAnswer'],
-                                                      style: pw.TextStyle(
-                                                          font: ttf,
-                                                          fontSize: 10))
-                                                      : pw.SizedBox(),
-                                                  value.docs[j].data()[
-                                                  'fifthQuestion'] !=
-                                                      null
-                                                      ? pw.Divider(thickness: 0.5) : pw.SizedBox(),
-                                                ],
-                                              ),
-                                              // Image 인터엣 상에서 가져와서 pdf로 저장하는 부분이 계속 안되고 있다.
-                                              // value.docs[j].data()['imageUrl'] != null && value.docs[j].data()['imageUrl'] != "" ?
-                                              // pw.Container(
-                                              //   child: pw.Container(
-                                              //     width: 300,
-                                              //     height: 500,
-                                              //     decoration: pw.BoxDecoration(
-                                              //       image: pw.DecorationImage(
-                                              //         image: ,
-                                              //       )
-                                              //     )
-                                              //   )
-                                              //
-                                              // // pw.MemoryImage()
-                                              //     : pw.SizedBox()
-                                            ]
-                                          ); // Center
-                                        })); // Page
+                          if (ds.size > 0) {
+                            // 모든 사용자 돌면서 pdf 저장시켜줘야 함
+                            for (int i = 0; i < ds.docs.length; i++) {
+                              // diary 데이터 불러오기
+                              ds.docs[i].reference
+                                  .collection('diarys')
+                                  .get()
+                                  .then((value) {
+                                if (value.size > 0) {
+                                  try {
+                                    if (ds.docs[i].data()['profileName'] ==
+                                        '제이티비') {
+                                    // if(i < 5) {
+                                      // 일기별로 돌면서 pdf에 페이지 추가
+                                      for (int j = 0;
+                                      j < value.docs.length;
+                                      j++) {
+                                        getImageFromFirebase(value.docs[j].data()['imageUrl'], j);
+                                      }
+                                    }
+                                    // pdf 업로드하기
+                                  } catch (e) {
+                                    print(e);
                                   }
-
-                                  savePdf(
-                                      pdf,
-                                      ds.docs[i].data()['grade'].toString() +
-                                          ' ' +
-                                          ds.docs[i].data()['profileName']);
                                 }
-                                // pdf 업로드하기
-                              } catch (e) {
-                                print(e);
-                              }
+                              });
                             }
-                          });
-                        }
-                      }
+                          }
 
-                      // 로딩 끝
-                      setState(() {
-                        isLoading = false;
-                      });
-                    },
-                    // onPressed: createPdf,
-                  )),
+                          // 로딩 끝
+                          setState(() {
+                            isLoading = false;
+                          });
+                        } on PlatformException catch (error) {
+                          print(error);
+                        }
+                      },
+                          child: Text('image download All')),
+                      // TextButton(onPressed: () async {
+                      //   try {
+                      //     // Saved with this method.
+                      //     var imageId = await ImageDownloader.downloadImage("https://raw.githubusercontent.com/wiki/ko2ic/image_downloader/images/flutter.png",
+                      //     destination: AndroidDestinationType.directoryDownloads);
+                      //     if (imageId == null) {
+                      //       return;
+                      //     }
+                      //
+                      //     // Below is a method of obtaining saved image information.
+                      //     var fileName = await ImageDownloader.findName(imageId);
+                      //     imageDownloadPath = ImageDownloader.findPath(imageId);
+                      //     var size = await ImageDownloader.findByteSize(imageId);
+                      //     var mimeType = await ImageDownloader.findMimeType(imageId);
+                      //   } on PlatformException catch (error) {
+                      //     print(error);
+                      //   }
+                      // },
+                      //     child: Text('image download Test'))
+                    ],
+                  ),
           ),
         ));
   }
