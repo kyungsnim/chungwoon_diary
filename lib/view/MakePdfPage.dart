@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:church_diary_app/model/CurrentUser.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_image/firebase_image.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_downloader/image_downloader.dart';
@@ -12,6 +14,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:toast/toast.dart';
+import 'package:http/http.dart' as http;
 
 import 'EditProfilePage.dart';
 
@@ -27,8 +30,12 @@ class _MakePdfPageState extends State<MakePdfPage> {
   PdfDocument document = PdfDocument();
   Printing pt;
   var imageId = new List<dynamic>(200);
-  List<Future<String>> imageDownloadPath = new List<Future<String>>(200);
   var imageLoad = new List<dynamic>(200);
+  List<Future<String>> imageDownloadPath = new List<Future<String>>(200);
+  Directory appDocDir;
+  // var finalImage;
+  Uint8List imageBytes;
+  int index = 0;
 
   getAllUserData() async {
     snapshot = FirebaseFirestore.instance.collection('users').snapshots();
@@ -46,6 +53,11 @@ class _MakePdfPageState extends State<MakePdfPage> {
       isLoading = false;
     });
     getAllUserData();
+    getDirectoryPath();
+  }
+
+  getDirectoryPath() async {
+    appDocDir = await getApplicationDocumentsDirectory();
   }
 
   CurrentUser getUserModelFromDataSnapshot(
@@ -68,15 +80,7 @@ class _MakePdfPageState extends State<MakePdfPage> {
   //   return path;
   // }
 
-  getImageFromFirebase(imageUrl, index) async {
-    imageId[index] = await ImageDownloader.downloadImage(imageUrl,
-        destination: AndroidDestinationType.directoryDownloads);
 
-    // 여러개 사진 받을 때 너무 빨라서 그런지 4개 중 뒤에 2개 이미지 파일을 다운받지 못하고 에러가 난다... 원인 파악 중
-    imageId[index].then((value) {
-      imageDownloadPath[index] = ImageDownloader.findPath(value);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,6 +111,7 @@ class _MakePdfPageState extends State<MakePdfPage> {
                               // diary 데이터 불러오기
                               ds.docs[i].reference
                                   .collection('diarys')
+                                  .orderBy('summitDate')
                                   .get()
                                   .then((value) {
                                 if (value.size > 0) {
@@ -116,20 +121,63 @@ class _MakePdfPageState extends State<MakePdfPage> {
                                     // final Uint8List fontData = File('/fonts/NanumMyeongjo.ttf').readAsBytesSync();
                                     final ttf = pw.Font.ttf(fontData);
 
-                                    if (ds.docs[i].data()['profileName'] ==
-                                        '제이티비') {
-                                      // if(i < 5) {
+                                    // if (ds.docs[i].data()['profileName'] ==
+                                    //     '제이티비') {
+                                      if(i < 5) {
                                       // 일기별로 돌면서 pdf에 페이지 추가
                                       for (int j = 0;
                                           j < value.docs.length;
                                           j++) {
-                                        imageDownloadPath[j].then((valueString) {
-                                          imageLoad[j] = File(valueString).readAsBytesSync();
-                                        });
 
-                                        // rootBundle.load('assets/images/background.jpg').then((value) {
-                                        //   imageLoad = value.buffer.asUint8List;
-                                        // });
+                                        var flag = false;
+
+                                        if(value.docs[j].data()['imageUrl'] != "") {
+                                          var year = value.docs[j]
+                                              .data()['summitDate']
+                                              .toDate()
+                                              .toString()
+                                              .substring(0, 4);
+                                          var month = value.docs[j]
+                                              .data()['summitDate']
+                                              .toDate()
+                                              .toString()
+                                              .substring(5, 7);
+                                          var day = value.docs[j]
+                                              .data()['summitDate']
+                                              .toDate()
+                                              .toString()
+                                              .substring(8, 10);
+                                          var fileName = 'image_$year$month${day}_${ds.docs[i].data()['id']}';
+                                          print('>>>>>>> summitDate : ' +
+                                              value.docs[j].data()['summitDate']
+                                                  .toDate()
+                                                  .toString());
+                                          // url, 폴더 경로를 이용해 파일 다운로드 받기
+                                          print('>>>>>>>>> fileName : ' +
+                                              fileName);
+                                          Reference imageRef = FirebaseStorage
+                                              .instance.ref(
+                                              '/uploads/${ds.docs[i]
+                                                  .data()['id']}/image_$year$month$day');
+
+                                          if (imageRef != null) {
+                                            // imageBytes = null;
+                                            print('>>>>>>>>> imageRef : ' +
+                                                imageRef.toString());
+                                            // File finalImage = await File('${appDocDir.path}/$fileName.jpg').create();
+                                            // imageBytes = await finalImage.readAsBytes();
+                                            // if(imageBytes != null) imageBytes.clear();
+                                            // imageBytes = await finalImage.readAsBytes();
+                                            setState(() {
+                                              imageBytes = null;
+                                            });
+                                            downloadFileExample(
+                                                imageRef, fileName);
+                                            print('================== imageBytes : $imageBytes');
+                                            flag = true;
+                                          }
+                                        }
+
                                         pdf.addPage(pw.Page(
                                             pageFormat: PdfPageFormat.a4,
                                             build: (pw.Context context) {
@@ -138,15 +186,9 @@ class _MakePdfPageState extends State<MakePdfPage> {
                                                   crossAxisAlignment: pw
                                                       .CrossAxisAlignment.start,
                                                   children: [
-                                                    // Image 인터엣 상에서 가져와서 pdf로 저장하는 부분이 계속 안되고 있다.
-                                                    value.docs[j]
-                                                        .data()['imageUrl'] != null &&
-                                                        value.docs[j]
-                                                            .data()['imageUrl'] != ""
-                                                        ?
-                                                    pw.Image(pw.MemoryImage(imageLoad[j])) : pw.SizedBox(),
+                                                    flag ? pw.Image(pw.MemoryImage(imageBytes)) : pw.SizedBox(),
                                                     pw.Text(value.docs[j]
-                                                        .data()['createdAt']
+                                                        .data()['summitDate']
                                                         .toDate()
                                                         .toString()
                                                         .substring(0, 10)),
@@ -375,14 +417,48 @@ class _MakePdfPageState extends State<MakePdfPage> {
                                   .then((value) {
                                 if (value.size > 0) {
                                   try {
-                                    if (ds.docs[i].data()['profileName'] ==
-                                        '제이티비') {
-                                    // if(i < 5) {
+                                    // if (ds.docs[i].data()['profileName'] ==
+                                    //     '제이티비') {
+                                    if(i < 5) {
                                       // 일기별로 돌면서 pdf에 페이지 추가
                                       for (int j = 0;
                                       j < value.docs.length;
                                       j++) {
-                                        getImageFromFirebase(value.docs[j].data()['imageUrl'], j);
+                                        // 다운로드 받을 폴더 경로 지정
+                                        if(value.docs[j].data()['imageUrl'] != "") {
+                                          var year = value.docs[j]
+                                              .data()['summitDate']
+                                              .toDate()
+                                              .toString()
+                                              .substring(0, 4);
+                                          var month = value.docs[j]
+                                              .data()['summitDate']
+                                              .toDate()
+                                              .toString()
+                                              .substring(5, 7);
+                                          var day = value.docs[j]
+                                              .data()['summitDate']
+                                              .toDate()
+                                              .toString()
+                                              .substring(8, 10);
+                                          var fileName = 'image_$year$month$day';
+                                          print('>>>>>>> summitDate : ' +
+                                              value.docs[j].data()['summitDate']
+                                                  .toDate()
+                                                  .toString());
+                                          // url, 폴더 경로를 이용해 파일 다운로드 받기
+                                          print('>>>>>>>>> fileName : ' +
+                                              fileName);
+                                          Reference imageRef = FirebaseStorage
+                                              .instance.ref(
+                                              '/uploads/${ds.docs[i]
+                                                  .data()['id']}/image_$year$month$day');
+                                          print('>>>>>>>>> imageRef : ' +
+                                              imageRef.toString());
+                                          downloadFileExample(
+                                              imageRef, fileName);
+                                        }
+                                        // getImageFromFirebase(value.docs[j].data()['imageUrl'], j);
                                       }
                                     }
                                     // pdf 업로드하기
@@ -403,30 +479,154 @@ class _MakePdfPageState extends State<MakePdfPage> {
                         }
                       },
                           child: Text('image download All')),
-                      // TextButton(onPressed: () async {
-                      //   try {
-                      //     // Saved with this method.
-                      //     var imageId = await ImageDownloader.downloadImage("https://raw.githubusercontent.com/wiki/ko2ic/image_downloader/images/flutter.png",
-                      //     destination: AndroidDestinationType.directoryDownloads);
-                      //     if (imageId == null) {
-                      //       return;
-                      //     }
-                      //
-                      //     // Below is a method of obtaining saved image information.
-                      //     var fileName = await ImageDownloader.findName(imageId);
-                      //     imageDownloadPath = ImageDownloader.findPath(imageId);
-                      //     var size = await ImageDownloader.findByteSize(imageId);
-                      //     var mimeType = await ImageDownloader.findMimeType(imageId);
-                      //   } on PlatformException catch (error) {
-                      //     print(error);
-                      //   }
-                      // },
-                      //     child: Text('image download Test'))
+                      TextButton(onPressed: () async {
+                        try {
+                          // // Saved with this method.
+                          // var imageId = await ImageDownloader.downloadImage("https://raw.githubusercontent.com/wiki/ko2ic/image_downloader/images/flutter.png",
+                          // destination: AndroidDestinationType.directoryDownloads);
+                          // if (imageId == null) {
+                          //   return;
+                          // }
+                          //
+                          // // Below is a method of obtaining saved image information.
+                          // var fileName = await ImageDownloader.findName(imageId);
+                          // imageDownloadPath = ImageDownloader.findPath(imageId);
+                          // var size = await ImageDownloader.findByteSize(imageId);
+                          // var mimeType = await ImageDownloader.findMimeType(imageId);
+
+                        } on PlatformException catch (error) {
+                          print(error);
+                        }
+                      },
+                          child: Text('image download Test'))
                     ],
                   ),
           ),
         ));
   }
+
+  getImageFromFirebase(imageUrl, index) async {
+    imageId[index] = ImageDownloader.downloadImage(imageUrl,
+        destination: AndroidDestinationType.directoryDownloads);
+
+    // 여러개 사진 받을 때 너무 빨라서 그런지 4개 중 뒤에 2개 이미지 파일을 다운받지 못하고 에러가 난다... 원인 파악 중
+    // imageId[index].then((value) {
+    //   imageDownloadPath[index] = ImageDownloader.findPath(imageId[index]);
+    // });
+    imageId[index].then((value) {
+      imageDownloadPath[index] = ImageDownloader.findPath(value);
+      print('****** imageId : $value');
+    });
+    // imageDownloadPath[index] = ImageDownloader.findPath(await imageId[index]);
+
+    print('>>>>>>>>>> imageId[index] : ${imageId[index]}');
+    print('>>>>>>>>>> imageDownloadPath[index] : ${imageDownloadPath[index].then((value) => print('value: $value'))}');
+
+
+    // try {
+    //   // Saved with this method.
+    //   var imageId = await ImageDownloader.downloadImage(imageUrl,
+    //       destination: AndroidDestinationType.directoryDownloads);
+    //   if (imageId == null) {
+    //     return;
+    //   }
+    //
+    //   // Below is a method of obtaining saved image information.
+    //   var fileName = await ImageDownloader.findName(imageId);
+    //   var path = await ImageDownloader.findPath(imageId);
+    //   var size = await ImageDownloader.findByteSize(imageId);
+    //   var mimeType = await ImageDownloader.findMimeType(imageId);
+    //   print('>>>>>>>>> fileName : $fileName');
+    //   print('>>>>>>>>> path : $path');
+    //   print('>>>>>>>>> size : $size');
+    //   print('>>>>>>>>> mimeType : $mimeType');
+    // } on PlatformException catch (error) {
+    //   print(error);
+    // }
+  }
+
+  Future<void> downloadFileExample(Reference ref, String fileName) async {
+
+    print('&&&&&&&&&& appDocDir: ${appDocDir.path}');
+    // File downloadToFile = File('${appDocDir.path}/download-logo.png');
+    // final Directory systemTempDir = Directory.current;// getTemporaryDirectory();Directory.systemTemp;
+    File downloadToFile = File('${appDocDir.path}/$fileName.jpg');
+    // File ff = await File('${appDocDir.path}/$fileName.jpg').create();
+    //
+    File finalImage = await File('${appDocDir.path}/$fileName.jpg').create();
+
+    // if(imageBytes != null) imageBytes.clear();
+    imageBytes = finalImage.readAsBytesSync();
+    // index++
+
+    try {
+      // await ref
+      //     .writeToFile(downloadToFile);
+      final DownloadTask task = ref.writeToFile(downloadToFile);
+      await task.then((_) => print('complete'));
+    } on FirebaseException catch (e) {
+      // e.g, e.code == 'canceled'
+    }
+  }
+
+  Future<void> downloadFile(Reference ref, String fileName) async {
+    final String url = await ref.getDownloadURL();
+    final http.Response downloadData = await http.get(url);
+    final Directory systemTempDir = Directory.current;// getTemporaryDirectory();Directory.systemTemp;
+    final File tempFile = File('${systemTempDir.path}/fileName.jpg');
+    if (tempFile.existsSync()) {
+      await tempFile.delete();
+    }
+    await tempFile.create();
+    final DownloadTask task = ref.writeToFile(tempFile);
+    // final int byteCount = (await task.whenComplete(() => null)).totalByteCount;
+    var bodyBytes = downloadData.bodyBytes;
+    final String name = await ref.getName();
+    final String path = await ref.getPath();
+    print(
+      'Success!\nDownloaded $name \nUrl: $url'
+          '\npath: $path \n',
+    );
+
+    showToast("Complete");
+    // _scaffoldKey.currentState.showSnackBar(
+    //   SnackBar(
+    //     backgroundColor: Colors.white,
+    //     content: Image.memory(
+    //       bodyBytes,
+    //       fit: BoxFit.fill,
+    //     ),
+    //   ),
+    // );
+  }
+
+
+  // Future<String> downloadFile(String url, String fileName, String dir) async {
+  //   HttpClient httpClient = new HttpClient();
+  //   File file;
+  //   String filePath = '';
+  //   String myUrl = '';
+  //
+  //   try {
+  //     myUrl = url+'/'+fileName;
+  //     var request = await httpClient.getUrl(Uri.parse(myUrl));
+  //     var response = await request.close();
+  //     if(response.statusCode == 200) {
+  //       var bytes = await consolidateHttpClientResponseBytes(response);
+  //       filePath = '$dir/$fileName';
+  //       file = File(filePath);
+  //       await file.writeAsBytes(bytes);
+  //     }
+  //     else
+  //       filePath = 'Error code: '+response.statusCode.toString();
+  //   }
+  //   catch(ex){
+  //     filePath = 'Can not fetch url';
+  //   }
+  //
+  //   return filePath;
+  // }
+
 
   savePdf(pdf, userName) async {
     final output = await getTemporaryDirectory();
