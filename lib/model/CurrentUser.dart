@@ -16,6 +16,8 @@ class CurrentUser extends DatabaseItem {
   DateTime updatedAt;
   String loginType;
   bool validateByAdmin;
+  DateTime imageDownloadAt;
+  DateTime pdfUploadAt;
 
   CurrentUser({
     this.id,
@@ -31,7 +33,9 @@ class CurrentUser extends DatabaseItem {
     this.createdAt,
     this.updatedAt,
     this.loginType,
-    this.validateByAdmin
+    this.validateByAdmin,
+    this.imageDownloadAt,
+    this.pdfUploadAt
   }) : super(id);
 
   factory CurrentUser.fromDocument(DocumentSnapshot doc) {
@@ -50,7 +54,7 @@ class CurrentUser extends DatabaseItem {
       createdAt: getDocs["createdAt"].toDate(),
       updatedAt: getDocs["updatedAt"].toDate(),
       loginType: getDocs["loginType"],
-      validateByAdmin: getDocs["validateByAdmin"]
+      validateByAdmin: getDocs["validateByAdmin"],
     );
   }
 }

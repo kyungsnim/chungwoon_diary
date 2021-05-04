@@ -38,6 +38,12 @@ class _FeedPageState extends State<FeedPage> {
     });
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _scrollController.dispose();
+  }
+
   Stream<QuerySnapshot> newStream() {
     return FirebaseFirestore.instance
         .collection('feed')
@@ -75,12 +81,12 @@ class _FeedPageState extends State<FeedPage> {
         controller: _scrollController,
         itemCount: snapshot.length,
         itemBuilder: (context, i) {
-          // print("i : " + i.toString());
+          print("i : " + i.toString());
           final currentRow = (i + 1) ~/ FETCH_ROW;
           if (_lastRow != currentRow) {
             _lastRow = currentRow;
           }
-          // print("lastrow : " + _lastRow.toString());
+          print("lastrow : " + _lastRow.toString());
           return _buildListItem(context, snapshot[i]);
         });
   }
