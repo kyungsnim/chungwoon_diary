@@ -29,7 +29,7 @@ class _MakePdfPageState extends State<MakePdfPage> {
   List<Future<String>> imageDownloadPath = new List<Future<String>>(200);
   var imageDownloadAtStream;
   var pdfUploadAtStream;
-
+  var peopleCount;
   // Directory appDocDir;
   Stream<QuerySnapshot> userInfoStream;
   ScrollController _pdfScrollController = new ScrollController();
@@ -68,7 +68,7 @@ class _MakePdfPageState extends State<MakePdfPage> {
     setState(() {
       isLoading = true;
     });
-    // getAllUserData();
+    getAllUserData();
     getDirectoryPath(); // 일기 사진 다운받을 경로 지정
     getUserStreamData().then((val) {
       if (mounted) {
@@ -122,6 +122,10 @@ class _MakePdfPageState extends State<MakePdfPage> {
                 ? CircularProgressIndicator()
                 : Expanded(
                     child: ListView(shrinkWrap: false, children: [
+                      ds != null ? Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text('총 인원 ${ds.docs.length}명'),
+                      ) : Center(child: Text('총 인원 수 불러오는 중')) ,
                     // searchUserInfo(),
                     viewUserInfoListStream(),
                   ]))
@@ -619,22 +623,20 @@ class _UserInfoTileState extends State<UserInfoTile> {
             children: [
               Column(
                 children: [
-                  widget.searchUser.imageDownloadAt == DateTime(1990,1,1) ? Text("") : Text('이미지다운 : ${widget.searchUser.imageDownloadAt.month}/${widget.searchUser.imageDownloadAt.day} ${widget.searchUser.imageDownloadAt.hour}:${widget.searchUser.imageDownloadAt.minute}'),
+                  widget.searchUser.imageDownloadAt == DateTime(1990,1,1) ? Text("") : Text('이미지다운 : ${widget.searchUser.imageDownloadAt.month}/${widget.searchUser.imageDownloadAt.day} ${widget.searchUser.imageDownloadAt.hour}:${widget.searchUser.imageDownloadAt.minute}', style: TextStyle(fontSize: 12, color: Colors.blueAccent, fontWeight: FontWeight.bold)),
                   SizedBox(height: 2),
-                  widget.searchUser.pdfUploadAt == DateTime(1990,1,1) ? Text("") : Text('pdf업로드 : ${widget.searchUser.pdfUploadAt.month}/${widget.searchUser.pdfUploadAt.day} ${widget.searchUser.pdfUploadAt.hour}:${widget.searchUser.pdfUploadAt.minute}'),
+                  widget.searchUser.pdfUploadAt == DateTime(1990,1,1) ? Text("") : Text('pdf업로드 : ${widget.searchUser.pdfUploadAt.month}/${widget.searchUser.pdfUploadAt.day} ${widget.searchUser.pdfUploadAt.hour}:${widget.searchUser.pdfUploadAt.minute}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.redAccent)),
                 ],
               ),
               Spacer(),
               RaisedButton(
-                color: Colors.black,
+                color: Colors.blueAccent,
                 onPressed: () async {
                   try {
                     // 로딩 시작
                     setState(() {
                       isLoading = true;
                     });
-
-
 
                     // diary 데이터 불러오기
                     FirebaseFirestore.instance
@@ -708,7 +710,7 @@ class _UserInfoTileState extends State<UserInfoTile> {
               ),
               SizedBox(width: 5),
               RaisedButton(
-                color: Colors.black,
+                color: Colors.redAccent,
                 onPressed: () async {
                             // 로딩 시작
                             setState(() {
@@ -786,7 +788,7 @@ class _UserInfoTileState extends State<UserInfoTile> {
                                                   mainAxisAlignment: pw.MainAxisAlignment.center,
                                                   children: [
                                                     // 사진이 있는 일기에만 사진 넣기
-                                                    flag
+                                                    flag && imageBytesList[j] != null
                                                         ? pw.Center(child: pw.Image(pw.MemoryImage(
                                                             imageBytesList[j]), width: 200, height: 200))
                                                         // ? pw.Container(
